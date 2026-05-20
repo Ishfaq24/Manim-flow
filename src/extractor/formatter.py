@@ -45,6 +45,11 @@ class DatasetFormatter:
             "errors": validation.errors,
         }
         meta["content_hash"] = scene.content_hash
+        meta["extraction_diagnostics"] = {
+            "included_dependency_symbols": list(scene.dependency_tree),
+            "missing_symbols": scene.missing_symbols,
+            "dependency_tree": scene.dependency_tree,
+        }
         return TrainingExample(
             messages=[
                 ChatMessage(role="user", content=prompt),

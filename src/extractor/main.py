@@ -29,7 +29,9 @@ class ExtractionPipeline:
         self.config = config
         self.scanner = RepositoryScanner(config)
         self.parser = ManimAstParser(config)
-        self.scene_extractor = SceneExtractor()
+        self.scene_extractor = SceneExtractor(
+            include_module_dependencies=config.include_module_dependencies,
+        )
         self.metadata_generator = MetadataGenerator(source_repo=config.source_repo)
         self.prompt_generator = PromptGenerator(
             augmentation_count=config.prompt_augmentation_count,
@@ -45,6 +47,8 @@ class ExtractionPipeline:
 
         files = self.scanner.scan()
         self.stats.scanned_files = len(files)
+        self.stats.skipped_directories = self.scanner.metrics.skipped_directories
+        self.stats.scan_duration_seconds = self.scanner.metrics.duration_seconds
         LOGGER.info("Discovered %d candidate Python files.", len(files))
 
         parsed_files = self._parse_files(files)
@@ -113,6 +117,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-ratio", type=float, default=0.05, help="Test split ratio.")
     parser.add_argument("--min-quality-score", type=float, default=0.35, help="Minimum metadata quality score.")
     parser.add_argument("--render", action="store_true", help="Run optional Manim render validation.")
+    parser.add_argument("--import-validation", action="store_true", help="Import extracted code in a subprocess.")
+    parser.add_argument(
+        "--instantiation-validation",
+        action="store_true",
+        help="Instantiate the extracted scene class in a subprocess.",
+    )
+    parser.add_argument(
+        "--legacy-row-split",
+        action="store_true",
+        help="Use legacy row-wise splitting instead of content-hash-safe grouping.",
+    )
+    parser.add_argument(
+        "--no-dependency-context",
+        action="store_true",
+        help="Disable module-level dependency inclusion for extracted scenes.",
+    )
+    parser.add_argument(
+        "--strict-dependencies",
+        action="store_true",
+        help="Reject scenes with unresolved local dependency diagnostics.",
+    )
     parser.add_argument("--manim-binary", default="manim", help="Manim executable name or path.")
     parser.add_argument("--render-timeout", type=int, default=90, help="Render timeout in seconds.")
     parser.add_argument("--prompt-augmentations", type=int, default=0, help="Synthetic prompt variants per scene.")
@@ -135,9 +160,14 @@ def build_config(args: argparse.Namespace) -> ExtractorConfig:
         random_seed=args.seed,
         min_quality_score=args.min_quality_score,
         run_render_validation=args.render,
+        run_import_validation=args.import_validation,
+        run_instantiation_validation=args.instantiation_validation,
         render_timeout_seconds=args.render_timeout,
         manim_binary=args.manim_binary,
         prompt_augmentation_count=args.prompt_augmentations,
+        split_by_content_hash=not args.legacy_row_split,
+        include_module_dependencies=not args.no_dependency_context,
+        strict_dependency_validation=args.strict_dependencies,
         log_level=args.log_level,
     )
 

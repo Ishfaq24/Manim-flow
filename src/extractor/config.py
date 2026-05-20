@@ -24,6 +24,7 @@ DEFAULT_IGNORE_DIRS: frozenset[str] = frozenset(
         "site-packages",
         "dist",
         "build",
+        "vendor",
         "media",
         "partial_movie_files",
     }
@@ -60,6 +61,8 @@ class ExtractorConfig:
     random_seed: int = 42
     min_quality_score: float = 0.35
     run_render_validation: bool = False
+    run_import_validation: bool = False
+    run_instantiation_validation: bool = False
     render_timeout_seconds: int = 90
     manim_binary: str = "manim"
     preview_output_dir: Path | None = None
@@ -67,6 +70,10 @@ class ExtractorConfig:
     ignore_dirs: frozenset[str] = DEFAULT_IGNORE_DIRS
     scene_base_names: frozenset[str] = SCENE_BASE_NAMES
     prompt_augmentation_count: int = 0
+    split_by_content_hash: bool = True
+    enforce_split_integrity: bool = True
+    include_module_dependencies: bool = True
+    strict_dependency_validation: bool = False
     include_file_metadata: bool = True
     log_level: str = "INFO"
 
@@ -99,6 +106,8 @@ class ExtractorStats:
     """Aggregate dataset statistics produced during export."""
 
     scanned_files: int = 0
+    skipped_directories: int = 0
+    scan_duration_seconds: float = 0.0
     parsed_files: int = 0
     failed_files: int = 0
     discovered_scenes: int = 0

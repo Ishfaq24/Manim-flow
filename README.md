@@ -54,13 +54,43 @@ data/processed/3b1b-videos/train.jsonl
 data/processed/3b1b-videos/validation.jsonl
 data/processed/3b1b-videos/test.jsonl
 data/processed/3b1b-videos/stats.json
+data/processed/3b1b-videos/split_integrity_report.json
 ```
+
+By default, train/validation/test splitting is grouped by each scene's stable
+`content_hash`, so prompt augmentations for the same extracted code stay in the
+same split. Use `--legacy-row-split` only when reproducing old row-wise outputs.
+
+The extractor also includes referenced module-level helpers, parent classes, and
+constants when they are needed by a scene. Use `--no-dependency-context` only if
+you need the previous imports-plus-class extraction behavior.
 
 ## Validate Training Data
 
 ```powershell
 python scripts\validate_training_dataset.py data\processed\3b1b-videos\train_small.jsonl
 ```
+
+## Build Model-Ready Data
+
+After regenerating the source datasets, build a filtered combined dataset:
+
+```powershell
+python scripts\build_model_ready_dataset.py
+```
+
+This writes:
+
+```text
+data/processed/model-ready/train.jsonl
+data/processed/model-ready/validation.jsonl
+data/processed/model-ready/test.jsonl
+data/processed/model-ready/train_small.jsonl
+data/processed/model-ready/split_integrity_report.json
+```
+
+Rows with unresolved extraction symbols are excluded from `model-ready`; the
+original source-specific processed datasets are preserved.
 
 ## Smoke Train
 
