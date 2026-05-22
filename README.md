@@ -11,7 +11,7 @@ Production-oriented tooling for converting Manim scene repositories into JSONL c
 |-- configs/                       # training and pipeline configs
 |-- data/
 |   |-- raw/3b1b-videos/           # cloned upstream source repo, ignored by git
-|   `-- processed/3b1b-videos/     # generated train/validation/test JSONL, ignored by git
+|   `-- processed/3b1b-videos/     # generated train/validation/test JSONL
 |-- models/                        # trained adapters/checkpoints, ignored by git
 |-- docs/                          # project notes and operating guides
 |-- examples/                      # tiny local sample repo
